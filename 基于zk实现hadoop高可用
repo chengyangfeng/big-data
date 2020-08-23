@@ -1,0 +1,12 @@
+基于zk实现hadoop高可用
+  HDFS高可用
+    HDFS高可用的实现组件
+      1、active namenode & standby namenode：两台namenode互为主备，一台处于active状态，一台处于standby状态，只有active状态的才对外提供服务
+      2、主备控制切换器zkfailovercontroller：作为独立的进程运行，对namenode的主备切换进行整体的控制，能够及时检测到namenode的健康状态，并在namenode发生故障时，依赖zk进行主备选举和切换，当然namenode
+         也支持不依赖于zk进行手动主备切换
+      3、zk:为主备切换控制器提供主备选举支持
+      4、共享存储系统：共享存储系统是主备切换最关键的部分，共享存储系统保存了完整的namenode存储的所有元数据信息，active namenode和standby namenode通过共享存储系统实现元数据同步，在主备切换时，只有当
+         新的主namenode同步完所有的元数据信息后，才会对外提供服务
+      5、DataNode节点:除了通过共享存储系统共享HDFS的所有元数据信息外，主namenode和备namenode还共享HDFS上数据块和DataNode之间的映射关系，DataNode会自动向主namenode和备namenode上数据块的位置信息
+  YARN高可用
+      yarn的高可用与HDFS高度类似，只是resourcemanager上没有保存那么多的元数据信息，所有直接将状态写入zk，依赖于zk进行主备的选举
